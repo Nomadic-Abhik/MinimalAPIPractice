@@ -17,8 +17,8 @@ builder.Services.AddSwaggerGen();
 
 var sqlconBuilder = new SqlConnectionStringBuilder();
 sqlconBuilder.ConnectionString = builder.Configuration.GetConnectionString("DevConnection");
-sqlconBuilder.UserID = "db_admin";
-sqlconBuilder.Password = "Abhik@003";
+//sqlconBuilder.UserID = "db_admin";
+//sqlconBuilder.Password = "Abhik@003";
 
 
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(sqlconBuilder.ConnectionString));
