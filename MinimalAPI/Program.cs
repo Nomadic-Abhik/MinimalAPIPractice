@@ -6,12 +6,13 @@ using MinimalAPI.Dto;
 using MinimalAPI.IRepository;
 using MinimalAPI.Models;
 using MinimalAPI.Repository;
+using Microsoft.FeatureManagement;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
+var featureManager = 
 
 // Configure the HTTP request pipeline.
 var appServiceConnString = "Endpoint=https://myappconfiguration003.azconfig.io;Id=ufzu-li-s0:TXbEqy6g5DkdIJ0FxS6U;Secret=TY7FSk68ryrzePo/ppSgMMl9GNTllG9P3EUAuvqITbQ=";
@@ -28,7 +29,7 @@ sqlconBuilder.ConnectionString = builder.Configuration["DevConnection"];
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(sqlconBuilder.ConnectionString));
 builder.Services.AddScoped<ICommandRepository, CommandRepository>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
+builder.Services.AddFeatureManagement();
 var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
@@ -41,11 +42,16 @@ app.MapGet("api/v1/commands", async (ICommandRepository repo, IMapper mapper) =>
     var commands = await repo.GetAllCommands();
     return Results.Ok(mapper.Map<IEnumerable<CommandReadDto>>(commands));
 }).WithDisplayName("CommandNames");
-//app.MapGet("api/v2/commands", async (ICommandRepository repo, IMapper mapper) =>
-//{
-//    var commands = await repo.GetAllCommands();
-//    return Results.Ok(mapper.Map<IEnumerable<CommandReadDto>>(commands));
-//});
+
+app.MapGet("api/v2/commands", async (ICommandRepository repo, IMapper mapper, IFeatureManager featureManager) =>
+{
+    if(featureManager.IsEnabledAsync("beta").Result)
+    {
+        var commands = await repo.GetAllCommands();
+        return Results.Ok(mapper.Map<IEnumerable<CommandReadDto>>(commands));
+    }
+    return null;
+});
 app.MapGet("api/v1/commands/{id}", async (ICommandRepository repo, IMapper mapper, int id) => {
     var command = await repo.GetCommandById(id);
     if (command != null)
