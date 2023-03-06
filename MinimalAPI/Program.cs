@@ -14,9 +14,14 @@ builder.Services.AddSwaggerGen();
 
 
 // Configure the HTTP request pipeline.
+var appServiceConnString = "Endpoint=https://myappconfiguration003.azconfig.io;Id=ufzu-li-s0:TXbEqy6g5DkdIJ0FxS6U;Secret=TY7FSk68ryrzePo/ppSgMMl9GNTllG9P3EUAuvqITbQ=";
+builder.Host.ConfigureAppConfiguration(builder =>
+{
+    builder.AddAzureAppConfiguration(appServiceConnString);
+});
 
 var sqlconBuilder = new SqlConnectionStringBuilder();
-sqlconBuilder.ConnectionString = builder.Configuration.GetConnectionString("DevConnection");
+sqlconBuilder.ConnectionString = builder.Configuration["DevConnection"];
 
 
 
